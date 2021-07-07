@@ -32,14 +32,21 @@ func (f *Frain) GetBanksFromApi() ([]types.Component, error) {
 		return nil, &types.ServerException{Message: &errorMsg}
 	}
 
-	return parseAPIResponse(resp)
+	var components []types.Component
+
+	err = parseAPIResponse(resp, &components)
+	if err != nil {
+		return nil, err
+	}
+
+	return components, nil
 }
 
-func parseAPIResponse(resp *http.Response) ([]types.Component, error) {
+func parseAPIResponse(resp *http.Response, resultPtr interface{}) error {
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		errorMsg := fmt.Sprint("Error while reading the response bytes | ", err)
-		return nil, &types.ServerException{Message: &errorMsg}
+		return &types.ServerException{Message: &errorMsg}
 	}
 
 	defer func() {
@@ -54,12 +61,17 @@ func parseAPIResponse(resp *http.Response) ([]types.Component, error) {
 	err = json.Unmarshal(bytes, &response)
 	if err != nil {
 		errorMsg := fmt.Sprint("Error while unmarshalling the response bytes | ", err)
-		return nil, &types.ServerException{Message: &errorMsg}
+		return &types.ServerException{Message: &errorMsg}
 	}
 
 	if !response.Status {
-		return nil, &types.ClientException{Message: &response.Message}
+		return &types.ClientException{Message: &response.Message}
 	}
 
-	return response.Data, nil
+	err = json.Unmarshal(*response.Data, resultPtr)
+	if err != nil {
+		errorMsg := fmt.Sprint("Error while unmarshalling the response data bytes | ", err)
+		return &types.ServerException{Message: &errorMsg}
+	}
+	return nil
 }

@@ -88,7 +88,7 @@ func retrieveTokenFromEnv() string {
 	return token
 }
 
-func (f *Frain) GetBanks() interface{} {
+func (f *Frain) GetBanks() []types.Component {
 	expiryTime := f.options.ExpiryTime
 
 	var response []types.Component

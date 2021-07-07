@@ -1,11 +1,14 @@
 package types
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type APIResponse struct {
-	Status  bool        `json:"status"`
-	Message string      `json:"message"`
-	Data    []Component `json:"data"`
+	Status  bool             `json:"status"`
+	Message string           `json:"message"`
+	Data    *json.RawMessage `json:"data"`
 }
 
 type Component struct {
