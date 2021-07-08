@@ -10,7 +10,10 @@ import (
 	"time"
 )
 
-const BanksEndpointCacheKey = "frain_banks_uptime_status"
+const (
+	BanksEndpointCacheKey = "frain_banks_uptime_status"
+	ApiTokenKey           = "FRAIN_API_TOKEN"
+)
 
 type Frain struct {
 	Cache cache.Cache
@@ -81,9 +84,9 @@ func ensureExpiryTime(o *Options) {
 }
 
 func retrieveTokenFromEnv() string {
-	token := os.Getenv("FRAIN_API_TOKEN")
+	token := os.Getenv(ApiTokenKey)
 	if token == "" || len(token) == 0 {
-		log.Println("Unable to retrieve SDK API token endpoint")
+		log.Println("Unable to retrieve Frain SDK API token")
 	}
 	return token
 }

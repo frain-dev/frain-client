@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-var BanksEndpoint = "https://api.frain.dev/api/v1/banks"
+const BanksEndpoint = "https://api.frain.dev/api/v1/banks"
 
 type HTTPClient interface {
 	Do(*http.Request) (*http.Response, error)
