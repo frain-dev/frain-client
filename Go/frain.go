@@ -102,9 +102,9 @@ func (f *Frain) GetBanks() []types.Component {
 		banksFromApi, err := f.GetBanksFromApi()
 		if err == nil {
 			f.SaveBanksToCache(banksFromApi, expiryTime)
-			response = banksFromCache
+			response = banksFromApi
 		} else {
-			log.Println("ERROR: Failed to fetch from API", err)
+			log.Println("ERROR: Failed to fetch banks from API due to", err)
 		}
 	}
 
@@ -126,8 +126,7 @@ func (f *Frain) GetBanksFromCache() ([]types.Component, error) {
 	var components []types.Component
 	dataString := f.Cache.Get(BanksEndpointCacheKey)
 	if dataString == "" || len(dataString) == 0 {
-		errorMsg := "Banks not found in cache"
-		return nil, &types.FrainException{Message: &errorMsg}
+		return nil, &types.FrainException{Message: types.ErrorBanksNotFoundInCache}
 	}
 
 	err := json.Unmarshal([]byte(dataString), &components)

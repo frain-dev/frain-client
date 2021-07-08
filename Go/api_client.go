@@ -21,15 +21,13 @@ func (f *Frain) GetBanksFromApi() ([]types.Component, error) {
 
 	req, err := http.NewRequest("GET", BanksEndpoint, nil)
 	if err != nil {
-		errorMsg := fmt.Sprint("Error creating new request | ", err)
-		return nil, &types.ServerException{Message: &errorMsg}
+		return nil, &types.ServerException{Message: fmt.Sprint("Error creating new request | ", err)}
 	}
 	req.Header.Add("Authorization", "Bearer "+token)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		errorMsg := fmt.Sprint("Error processing request | ", err)
-		return nil, &types.ServerException{Message: &errorMsg}
+		return nil, &types.ServerException{Message: fmt.Sprint("Error processing request | ", err)}
 	}
 
 	var components []types.Component
@@ -45,8 +43,7 @@ func (f *Frain) GetBanksFromApi() ([]types.Component, error) {
 func parseAPIResponse(resp *http.Response, resultPtr interface{}) error {
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errorMsg := fmt.Sprint("Error while reading the response bytes | ", err)
-		return &types.ServerException{Message: &errorMsg}
+		return &types.ServerException{Message: fmt.Sprint("Error while reading the response bytes | ", err)}
 	}
 
 	defer func() {
@@ -60,18 +57,16 @@ func parseAPIResponse(resp *http.Response, resultPtr interface{}) error {
 
 	err = json.Unmarshal(bytes, &response)
 	if err != nil {
-		errorMsg := fmt.Sprint("Error while unmarshalling the response bytes | ", err)
-		return &types.ServerException{Message: &errorMsg}
+		return &types.ServerException{Message: fmt.Sprint("Error while unmarshalling the response bytes | ", err)}
 	}
 
 	if !response.Status {
-		return &types.ClientException{Message: &response.Message}
+		return &types.ClientException{Message: response.Message}
 	}
 
 	err = json.Unmarshal(*response.Data, resultPtr)
 	if err != nil {
-		errorMsg := fmt.Sprint("Error while unmarshalling the response data bytes | ", err)
-		return &types.ServerException{Message: &errorMsg}
+		return &types.ServerException{Message: fmt.Sprint("Error while unmarshalling the response data bytes | ", err)}
 	}
 	return nil
 }
