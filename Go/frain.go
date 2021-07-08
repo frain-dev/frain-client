@@ -93,34 +93,41 @@ func (f *Frain) GetBanks() []types.Component {
 
 	var response []types.Component
 
-	banksFromCache, _ := f.GetBanksFromCache()
-
-	banksFromApi, err := f.GetBanksFromApi()
-	if err != nil {
-		log.Println("WARNING: Fetching from cache instead due to", err)
+	banksFromCache, err := f.GetBanksFromCache()
+	if err == nil && len(banksFromCache) > 0 {
+		log.Println("WARNING: Fetching from cache")
 		response = banksFromCache
 	} else {
-		response = banksFromApi
-		f.SaveBankToCache(banksFromApi, expiryTime)
+		log.Println("WARNING: Fetching from API due to", err)
+		banksFromApi, err := f.GetBanksFromApi()
+		if err == nil {
+			f.SaveBanksToCache(banksFromApi, expiryTime)
+			response = banksFromCache
+		} else {
+			log.Println("ERROR: Failed to fetch from API", err)
+		}
 	}
 
 	return response
 }
 
-func (f *Frain) SaveBankToCache(components []types.Component, expiryTime time.Duration) {
-	bytes, err := json.Marshal(components)
-	if err != nil {
-		log.Println("ERROR: Failed to Marshal JSON: ", err)
-		return
+func (f *Frain) SaveBanksToCache(components []types.Component, expiryTime time.Duration) {
+	if len(components) > 0 {
+		bytes, err := json.Marshal(components)
+		if err != nil {
+			log.Println("ERROR: Failed to Marshal JSON: ", err)
+			return
+		}
+		f.Cache.Set(BanksEndpointCacheKey, string(bytes), expiryTime)
 	}
-	f.Cache.Set(BanksEndpointCacheKey, string(bytes), expiryTime)
 }
 
 func (f *Frain) GetBanksFromCache() ([]types.Component, error) {
 	var components []types.Component
 	dataString := f.Cache.Get(BanksEndpointCacheKey)
 	if dataString == "" || len(dataString) == 0 {
-		return nil, nil
+		errorMsg := "Banks not found in cache"
+		return nil, &types.FrainException{Message: &errorMsg}
 	}
 
 	err := json.Unmarshal([]byte(dataString), &components)
